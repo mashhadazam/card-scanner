@@ -1,0 +1,76 @@
+name: Build debug APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Run unit tests (card matching)
+        run: |
+          set +e
+          gradle :core:testDebugUnitTest > /tmp/test.log 2>&1
+          RC=$?
+          echo "--- compile errors (if any) ---"
+          grep -E "^e: |error: " /tmp/test.log | head -20 | while IFS= read -r line; do
+            echo "::error::$line"
+          done
+          echo "--- test case failures (if any) ---"
+          find . -path "*test-results/testDebugUnitTest/*.xml" 2>/dev/null | while IFS= read -r f; do
+            python3 - "$f" <<'EOF'
+          import sys, xml.etree.ElementTree as ET
+          try:
+              t = ET.parse(sys.argv[1]).getroot()
+          except Exception:
+              sys.exit(0)
+          for tc in t.iter("testcase"):
+              for fail in list(tc.iter("failure")) + list(tc.iter("error")):
+                  msg = (fail.get("message") or "")[:300].replace("\n", " ")
+                  print(f"::error::{tc.get('classname')}.{tc.get('name')}: {msg}")
+                  for line in ((fail.text or "").splitlines()[:10]):
+                      print("::error::   " + line[:300])
+          EOF
+          done
+          echo "--- tail of test log ---"
+          tail -20 /tmp/test.log
+          exit $RC
+
+      - name: Build debug APK
+        run: |
+          set +e
+          gradle :app:assembleDebug > /tmp/build.log 2>&1
+          RC=$?
+          echo "--- failure details (if any) ---"
+          grep -E "^e: |Execution failed|What went wrong|Could not resolve|error: " /tmp/build.log | head -40 | while IFS= read -r line; do
+            echo "::error::$line"
+          done
+          awk '/What went wrong:/{show=12} show>0{print; show--}' /tmp/build.log | head -30 | while IFS= read -r line; do
+            echo "::warning::$line"
+          done
+          echo "--- tail of build log ---"
+          tail -25 /tmp/build.log
+          exit $RC
+        # (the ::error::/::warning:: lines above surface as check-run annotations)
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: card-scanner-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

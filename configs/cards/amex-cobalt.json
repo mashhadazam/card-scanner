@@ -1,0 +1,30 @@
+{
+  "annualFeeCad": null,
+  "annualFeeNote": "Monthly fee — confirm the current amount on americanexpress.com",
+  "binPrefixes": [],
+  "earnRates": {
+    "All other purchases": "1 point per $1",
+    "Eligible eats, drinks, groceries and food delivery in Canada": "5 points per $1",
+    "Eligible gas, transit and rideshare in Canada": "2 points per $1",
+    "Eligible streaming subscriptions in Canada": "3 points per $1"
+  },
+  "id": "amex-cobalt",
+  "issuer": "American Express",
+  "lastScanned": "2026-09-29",
+  "name": "American Express Cobalt Card",
+  "network": "Amex",
+  "offerPageUrl": "https://www.americanexpress.com/ca/en/credit-cards/cobalt-card/",
+  "perks": [
+    "Front Of The Line presale and reserved tickets",
+    "Additional cards at no additional cost"
+  ],
+  "sourcesNote": "Earn rates and 1:1 transfers verified 2026-09-28 from americanexpress.com. Fee and welcome bonus change often — left to the daily scan. binPrefixes empty until verified from a real card scan.",
+  "transferPartners": [
+    "Frequent flyer and loyalty programs — 1:1 (see americanexpress.com for the current list)"
+  ],
+  "welcomeBonus": {
+    "details": [],
+    "headline": "Membership Rewards — see the current public offer",
+    "url": "https://www.americanexpress.com/ca/en/credit-cards/cobalt-card/"
+  }
+}
