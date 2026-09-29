@@ -17,7 +17,7 @@ import com.lemon.cardscanner.core.ScanResult
 import com.lemon.cardscanner.ui.CardDetailScreen
 import com.lemon.cardscanner.ui.HomeScreen
 import com.lemon.cardscanner.ui.ScanScreen
-import com.lemon.cardscanner.ui.theme.CardScannerTheme
+import com.lemon.cardscanner.ui.CardScannerTheme
 
 class MainActivity : ComponentActivity() {
 
