@@ -3,9 +3,9 @@ package com.lemon.cardscanner.core
 import kotlinx.serialization.Serializable
 
 /**
- * One card's display config. These live in configs/cards/ and are refreshed
- * by the daily backend scan. The app never invents card facts — it displays
- * exactly what is here.
+ * One card's display config. These live in the bank modules
+ * (:banks/<bank>) and are compiled into the app's catalog.
+ * The app never invents card facts — it displays exactly what is here.
  */
 @Serializable
 data class CardConfig(
@@ -32,12 +32,6 @@ data class BonusInfo(
     val headline: String = "See current public offer",
     val details: List<String> = emptyList(),
     val url: String = ""
-)
-
-@Serializable
-data class CardIndex(
-    val cards: List<String>,
-    val updatedAt: String = ""
 )
 
 /** One card's entry in the daily backend scan output. */

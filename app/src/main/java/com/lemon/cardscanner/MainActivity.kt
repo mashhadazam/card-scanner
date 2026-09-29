@@ -27,14 +27,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             CardScannerTheme {
                 val navController = rememberNavController()
-                var cards by remember { mutableStateOf(repo.loadBundledCards()) }
+                // Catalog is compiled in from the bank modules; only the
+                // backend's daily offer snippets refresh over the network.
+                val cards: List<CardConfig> = BankCatalogs.all
                 var offers by remember { mutableStateOf(repo.loadBundledOffers()) }
                 var lastScan by remember { mutableStateOf<ScanResult?>(null) }
 
-                // Bundled configs show instantly; the backend feed refreshes silently.
                 LaunchedEffect(Unit) {
-                    repo.refreshFromBackend()?.let { (freshCards, freshOffers) ->
-                        cards = freshCards
+                    repo.refreshOffers()?.let { freshOffers ->
                         offers = freshOffers
                     }
                 }

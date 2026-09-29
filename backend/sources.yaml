@@ -1,6 +1,7 @@
-# Cards the backend scans every day.
-# To add a card: add its entry here AND a config file in configs/cards/<card_id>.json,
-# then add the id to configs/index.json. The app picks it up automatically.
+# Offer pages the backend scans every day.
+# To add a card: add its facts to a bank module (:banks/<bank>/<Bank>Catalog.kt),
+# roll the module into app/BankCatalogs.kt, and add its offer page here.
+# The app picks the card up at the next build; the daily scan picks up offers.
 sources:
   - card_id: rbc-avion-visa-infinite
     offer_url: https://www.rbcroyalbank.com/credit-cards/camp/iav/avion-infinite-visa-met/

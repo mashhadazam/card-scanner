@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Daily backend scan: refresh the card-offer configs.
+"""Daily backend scan: refresh the offer snippets.
 
-Modus operandi: THIS job does the scanning. The app just displays configs/.
+Modus operandi: THIS job does the scanning. The app just displays it.
 Reads backend/sources.yaml, fetches each card's offer page, extracts
-bonus-related snippets, writes configs/offers.json, and stamps each card
-config's lastScanned. Committing is left to the caller (the daily-scan workflow).
+bonus-related snippets, and writes configs/offers.json. Card facts themselves
+live in the bank modules (:banks/<bank>) and are compiled into the app —
+this job never edits them. Committing is left to the caller
+(the daily-scan workflow).
 """
 import hashlib
 import json
@@ -17,7 +19,6 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCES = ROOT / "backend" / "sources.yaml"
-CARDS_DIR = ROOT / "configs" / "cards"
 OFFERS_JSON = ROOT / "configs" / "offers.json"
 
 DEFAULT_PATTERNS = [
@@ -84,7 +85,6 @@ def main() -> int:
         sources = yaml.safe_load(f)["sources"]
 
     now = datetime.now(timezone.utc)
-    stamped = now.strftime("%Y-%m-%d")
     out: dict = {"generatedAt": now.isoformat(timespec="seconds"), "cards": {}}
 
     for src in sources:
@@ -107,11 +107,6 @@ def main() -> int:
             "snippets": snippets,
             "url": url,
         }
-        cfg = CARDS_DIR / f"{card_id}.json"
-        if cfg.exists():
-            data = json.loads(cfg.read_text())
-            data["lastScanned"] = stamped
-            cfg.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
         print(f"{card_id}: {status}")
 
     OFFERS_JSON.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n")

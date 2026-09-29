@@ -16,9 +16,10 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
-        // Backend config feed. Modus operandi: the app is a thin display client.
-        // Everything it shows comes from configs/ in this repo, refreshed every
-        // day by the backend scan job. Change this when the repo moves.
+        // Backend offer feed. Modus operandi: the app is a thin display client.
+        // Card facts are compiled in from the bank modules; this feed carries
+        // only the daily offer snippets the backend scan writes to
+        // configs/offers.json. Change this when the repo moves.
         buildConfigField(
             "String", "CONFIG_BASE_URL",
             "\"https://raw.githubusercontent.com/mashhadazam/card-scanner/main/configs\""
@@ -64,6 +65,12 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    // One module per bank/provider — the app rolls them into one catalog.
+    implementation(project(":banks:td"))
+    implementation(project(":banks:rbc"))
+    implementation(project(":banks:cibc"))
+    implementation(project(":banks:bmo"))
+    implementation(project(":banks:amex"))
 
     val composeBom = platform("androidx.compose:compose-bom:2024.10.00")
     implementation(composeBom)

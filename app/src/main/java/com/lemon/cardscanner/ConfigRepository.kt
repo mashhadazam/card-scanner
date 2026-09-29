@@ -1,8 +1,6 @@
 package com.lemon.cardscanner
 
 import android.content.Context
-import com.lemon.cardscanner.core.CardConfig
-import com.lemon.cardscanner.core.CardIndex
 import com.lemon.cardscanner.core.OffersSnapshot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -11,28 +9,13 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * The app is a thin display client. Configs ship bundled (same files the
- * backend scans every day) and are refreshed from the backend feed when online.
+ * The app is a thin display client. The card catalog is compiled in from the
+ * bank modules ([BankCatalogs]); this repo only fetches the daily offer
+ * snippets the backend scan writes to configs/offers.json.
  */
 class ConfigRepository(private val context: Context) {
 
     private val json = Json { ignoreUnknownKeys = true }
-
-    fun loadBundledCards(): List<CardConfig> {
-        val index: CardIndex = context.assets.open("index.json").use { stream ->
-            json.decodeFromString(CardIndex.serializer(), stream.readBytes().toString(Charsets.UTF_8))
-        }
-        return index.cards.mapNotNull { id ->
-            runCatching {
-                context.assets.open("cards/$id.json").use { stream ->
-                    json.decodeFromString(
-                        CardConfig.serializer(),
-                        stream.readBytes().toString(Charsets.UTF_8)
-                    )
-                }
-            }.getOrNull()
-        }
-    }
 
     fun loadBundledOffers(): OffersSnapshot = runCatching {
         context.assets.open("offers.json").use { stream ->
@@ -40,19 +23,14 @@ class ConfigRepository(private val context: Context) {
         }
     }.getOrDefault(OffersSnapshot())
 
-    /** Returns fresh (cards, offers) from the backend feed, or null when offline. */
-    suspend fun refreshFromBackend(): Pair<List<CardConfig>, OffersSnapshot>? =
+    /** Returns fresh offers from the backend feed, or null when offline. */
+    suspend fun refreshOffers(): OffersSnapshot? =
         withContext(Dispatchers.IO) {
             runCatching {
-                val base = BuildConfig.CONFIG_BASE_URL
-                val index: CardIndex =
-                    json.decodeFromString(CardIndex.serializer(), httpGet("$base/index.json"))
-                val cards = index.cards.map { id ->
-                    json.decodeFromString(CardConfig.serializer(), httpGet("$base/cards/$id.json"))
-                }
-                val offers =
-                    json.decodeFromString(OffersSnapshot.serializer(), httpGet("$base/offers.json"))
-                cards to offers
+                json.decodeFromString(
+                    OffersSnapshot.serializer(),
+                    httpGet("${BuildConfig.CONFIG_BASE_URL}/offers.json")
+                )
             }.getOrNull()
         }
 
